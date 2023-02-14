@@ -2,34 +2,30 @@
 
 ## Building and Running Service
 
-In order to build, Go to ``Go`` module directory location `stream-grpc/service` or `stream-grpc/tls-service` and execute the following
+In order to build, Go to ``Go`` module directory location `stream-grpc/service` and execute the following
  shell command:
 ```
-go build -i -v -o server (tls-server) (mtls-server)
+go build -v
 ```
 
 In order to run, Go to ``Go`` module directory location `stream-grpc/service` `stream-grpc/service` or `stream-grpc/tls-service` and execute the following
 shell command:
 
 ```
-./server
-./tls-server
-./mtls-server
+./service
 ```
 
 ## Building and Running Client   
 
 In order to build, Go to ``Go`` module directory location `stream-grpc/client` or `stream-grpc/tls-client` and execute the following shell command:
 ```
-go build -i -v -o client (tls-client) (mtls-server)
+go build -v 
 ```
 
 In order to run, Go to ``Go`` module directory location `stream-grpc/client` or `stream-grpc/tls-client` and execute the following shell command:
 
 ```
 ./client
-./tls-client
-./mtls-client
 ```
 
 ## Additional Information

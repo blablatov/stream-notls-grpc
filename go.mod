@@ -2,6 +2,10 @@ module github.com/blablatov/stream-notls-grpc
 
 go 1.18
 
+replace github.com/blablatov/stream-notls-grpc/proto => ./proto
+
+replace github.com/blablatov/stream-notls-grpc/mockups => ./mockups
+
 require (
 	github.com/golang/protobuf v1.5.2
 	google.golang.org/grpc v1.53.0

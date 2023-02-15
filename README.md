@@ -6,27 +6,16 @@ In order to build, Go to ``Go`` module directory location `stream-notls-grpc/ser
  shell command:
 ```
 go build -v
-```
-
-In order to run, Go to ``Go`` module directory location `stream-notls-grpc/service` and execute the following
-shell command:
-
-```
 ./service
-```
+```  
 
 ## Building and Running Client   
 
 In order to build, Go to ``Go`` module directory location `stream-notls-grpc/client` and execute the following shell command:
 ```
 go build -v 
-```
-
-In order to run, Go to ``Go`` module directory location `stream-notls-grpc/client` and execute the following shell command:
-
-```
 ./client
-```
+```  
 
 ## Additional Information
 

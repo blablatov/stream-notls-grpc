@@ -22,6 +22,6 @@ go build -v
 ### Generate Server and Client side code   
 Go to ``Go`` module directory location `stream-notls-grpc/proto` and execute the following shell commands:    
 ``` 
-protoc product_info.proto --go_out=./ --go-grpc_out=./
-protoc product_info.proto --go-grpc_out=require_unimplemented_servers=false:.
+protoc order_management.proto --go_out=./ --go-grpc_out=./
+protoc order_management.proto --go-grpc_out=require_unimplemented_servers=false:.
 ``` 

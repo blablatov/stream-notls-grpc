@@ -61,7 +61,7 @@ func initGRPCServerBuffConn() {
 }
 
 // Conventional test that starts a gRPC server and client test the service with RPC
-func TestServer_AddProduct(t *testing.T) {
+func TestServer_AddOrder(t *testing.T) {
 	// Starting a conventional gRPC server runs on HTTP2
 	// Запускаем стандартный gRPC-сервер поверх HTTP/2
 	initGRPCServerHTTP2()
@@ -78,8 +78,8 @@ func TestServer_AddProduct(t *testing.T) {
 	price := float32(700.0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	// Calls remote method of AddProduct
-	// Вызываем удаленный метод AddProduct
+	// Calls remote method of AddOrder
+	// Вызываем удаленный метод AddOrder
 	r, err := c.AddOrder(ctx, &pb.Order{Id: id, Description: description, Price: price})
 	if err != nil { // Checks response. Проверяем ответ
 		log.Fatalf("Could not add product: %v", err)
@@ -88,7 +88,7 @@ func TestServer_AddProduct(t *testing.T) {
 }
 
 // Test written using Buffconn
-func TestServer_AddProductBufConn(t *testing.T) {
+func TestServer_AddOrderBufConn(t *testing.T) {
 	ctx := context.Background()
 	initGRPCServerBuffConn()
 	conn, err := grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(getBufDialer(listener)), grpc.WithInsecure())
@@ -112,7 +112,7 @@ func TestServer_AddProductBufConn(t *testing.T) {
 }
 
 // Тестирование производительности в цикле за указанное колличество итераций
-func BenchmarkServer_AddProductBufConn(b *testing.B) {
+func BenchmarkServer_AddOrderBufConn(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < 25; i++ {
 		ctx := context.Background()

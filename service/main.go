@@ -7,12 +7,14 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	pb "github.com/blablatov/stream-notls-grpc/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	wrapper "github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	_ "google.golang.org/grpc/encoding/gzip"
 	"google.golang.org/grpc/status"
 )
 
@@ -40,18 +42,16 @@ func (s *server) GetOrder(ctx context.Context, orderId *wrapper.StringValue) (*p
 	if exists {
 		return &ord, status.New(codes.OK, "").Err()
 	}
-
 	return nil, status.Errorf(codes.NotFound, "%v\nOrder does not exist. : ", orderId)
-
 }
 
 // Server-side Streaming RPC
 func (s *server) SearchOrders(searchQuery *wrappers.StringValue, stream pb.OrderManagement_SearchOrdersServer) error {
 
 	for key, order := range orderMap {
-		log.Print(key, order)
+		log.Println(key, order.String())
 		for _, itemStr := range order.Items {
-			log.Print(itemStr)
+			log.Println(itemStr)
 			if strings.Contains(itemStr, searchQuery.Value) {
 				// Send the matching orders in a stream
 				err := stream.Send(&order)
@@ -147,13 +147,77 @@ func (s *server) ProcessOrders(stream pb.OrderManagement_ProcessOrdersServer) er
 	}
 }
 
+// Server :: Unary Interceptor
+// Серверный унарный перехватчик в gRPC
+func orderUnaryServerInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// Pre-processing logic
+	// Gets info about the current RPC call by examining the args passed in
+	// Логика перед вызовом. Получает информацию о текущем RPC-вызове путем анализа переданных аргументов
+	log.Println("======= [Server Interceptor] ", info.FullMethod)
+	log.Printf(" Pre Proc Message : %s", req)
+
+	// Invoking the handler to complete the normal execution of a unary RPC.
+	// Вызываем обработчик, чтобы завершить нормальное выполнение унарного RPC-вызова
+	m, err := handler(ctx, req)
+
+	// Post processing logic
+	// Логика после вызова
+	log.Printf(" Post Proc Message : %s", m)
+	return m, err
+}
+
+// wrappedStream wraps around the embedded grpc.ServerStream, and intercepts the RecvMsg and
+// SendMsg method call.
+// Потоковый перехватчик на стороне сервера, wrappedStream — обертка вокруг встроенного интерфейса
+// grpc.ServerStream, которая перехватывает вызовы методов RecvMsg и SendMsg
+type wrappedStream struct {
+	grpc.ServerStream
+}
+
+// Функции RecvMsg, принадлежащей обертке; обрабатывает сообщения, принимаемые с помощью потокового gRPC.
+func (w *wrappedStream) RecvMsg(m interface{}) error {
+	log.Printf("====== [Server Stream Interceptor Wrapper] Receive a message (Type: %T) at %s", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.RecvMsg(m)
+}
+
+// Функции SendMsg, принадлежащей обертке; обрабатывает сообщения, отправляемые с помощью потокового gRPC.
+func (w *wrappedStream) SendMsg(m interface{}) error {
+	log.Printf("====== [Server Stream Interceptor Wrapper] Send a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.SendMsg(m)
+}
+
+// Создание экземпляра обертки
+func newWrappedStream(s grpc.ServerStream) grpc.ServerStream {
+	return &wrappedStream{s}
+}
+
+// Реализация потокового перехватчика
+func orderServerStreamInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	// Pre-processing. Этап предобработки
+	log.Println("====== [Server Stream Interceptor] ", info.FullMethod)
+
+	// Invoking the StreamHandler to complete the execution of RPC invocation
+	// Вызов метода StreamHandler потокового RPC с помощью обертки
+	err := handler(srv, newWrappedStream(ss))
+	if err != nil {
+		log.Printf("RPC failed with error %v", err)
+	}
+	return err
+}
+
 func main() {
+	log.SetPrefix("Server event: ")
+	log.SetFlags(log.Lshortfile)
 	initSampleData()
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer()
+	// Registers unary and stream interceptors to gRPC-server
+	// Регистрация унарного потокового перехватчикв на gRPC-сервере
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(orderUnaryServerInterceptor),
+		grpc.StreamInterceptor(orderServerStreamInterceptor))
 	pb.RegisterOrderManagementServer(s, &server{})
 	log.Printf("Starting gRPC listener on port " + port)
 	// Register reflection service on gRPC server.

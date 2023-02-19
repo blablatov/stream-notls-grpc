@@ -26,7 +26,7 @@ func TestServer_AddProduct(t *testing.T) {
 
 	// Contact the server and print out its response.
 	id := "Sumsung S999"
-	description := "Samsung Galaxy S10 is the latest smart phone, launched in February 2029"
+	description := "Samsung Galaxy S999 is the latest smart phone, launched in February 2029"
 	price := float32(777.0)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

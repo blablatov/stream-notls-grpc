@@ -9,6 +9,7 @@ import (
 	pb "github.com/blablatov/stream-notls-grpc/proto"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/encoding/gzip"
 )
 
 const (
@@ -16,6 +17,8 @@ const (
 )
 
 func main() {
+	log.SetPrefix("Client event: ")
+	log.SetFlags(log.Lshortfile)
 	// Setting up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
@@ -27,8 +30,9 @@ func main() {
 	defer cancel()
 
 	// Add Order
+	// Selecting gzip for compression. Сжатие. Выбор компрессора
 	order1 := pb.Order{Id: "101", Items: []string{"iPhone XS", "Mac Book Pro"}, Destination: "San Jose, CA", Price: 2300.00}
-	res, _ := client.AddOrder(ctx, &order1)
+	res, _ := client.AddOrder(ctx, &order1, grpc.UseCompressor(gzip.Name))
 	if res != nil {
 		log.Print("AddOrder Response -> ", res.Value)
 	}

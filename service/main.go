@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	_ "google.golang.org/grpc/encoding/gzip"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -220,8 +221,9 @@ func main() {
 		grpc.StreamInterceptor(orderServerStreamInterceptor))
 	pb.RegisterOrderManagementServer(s, &server{})
 	log.Printf("Starting gRPC listener on port " + port)
-	// Register reflection service on gRPC server.
-	// reflection.Register(s)
+	// Register reflection service on gRPC server
+	// Регистрация отражения сервиса на gRPC-сервере
+	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
